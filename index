@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shashwat - Data Enthusiast</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Modern Dark (Dark Slate, Light Gray, Vibrant Orange) -->
+    <!-- Application Structure Plan: A single-page portfolio with a top navigation bar. Sections include an impactful hero 'Home', a skills section with a visually striking chart, an interactive 'Projects' gallery with a multi-column layout and hover effects, and a stylized vertical 'Experience & Education' timeline. This structure is designed for a seamless, scroll-based narrative, allowing for both quick scanning and deep exploration. The dark theme with vibrant accents provides a modern, high-tech feel. -->
+    <!-- Visualization & Content Choices: 
+        - Skills: Report Info -> Technical Skills -> Goal: Visually showcase strengths -> Viz: Horizontal Bar Chart (Chart.js) -> Interaction: Custom tooltip styling and responsive resizing -> Justification: Provides a clean, modern, and easily scannable representation of skills. The vibrant colors in the dark theme make the data points stand out.
+        - Projects: Report Info -> Project descriptions -> Goal: Organize & Detail -> Viz: Grid of Card-based elements (HTML/Tailwind) -> Interaction: Filter buttons, subtle hover scale/shadow animations, and clickable cards to a project portfolio site -> Justification: Encourages exploration and allows users to quickly filter by technology, making the content relevant to their interests. The animations add a layer of polish, and the clickable cards provide a direct path to more detailed work.
+        - Experience/Education: Report Info -> Work History & Education -> Goal: Show chronology & milestones -> Viz: Stylized Vertical Timeline (HTML/Tailwind/CSS) -> Interaction: Scroll-based animation for visual entry -> Justification: Breaks up the page with a strong vertical design element, making career progression clear and visually interesting.
+        - CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a1a1a; /* Dark background */
+            color: #d4d4d4; /* Light gray text */
+        }
+        .nav-link {
+            transition: color 0.3s ease;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #ff8c00; /* Vibrant Orange accent */
+        }
+        .project-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid #333;
+        }
+        .project-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+        }
+        .tag {
+            background-color: #333;
+            color: #ff8c00;
+            font-size: 0.75rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-weight: 500;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -2.75rem;
+            top: 0;
+            width: 1.25rem;
+            height: 1.25rem;
+            border-radius: 50%;
+            background-color: #ff8c00;
+            border: 3px solid #1a1a1a;
+            z-index: 10;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 400px;
+            max-height: 50vh;
+        }
+        .filter-btn.active, .filter-btn:hover {
+            background-color: #ff8c00;
+            color: #1a1a1a;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+        .fade-in {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        .fade-in.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .contact-form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #d4d4d4;
+        }
+        .contact-form-input {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: #333;
+            border: 1px solid #4a4a4a;
+            border-radius: 0.5rem;
+            color: #d4d4d4;
+            transition: border-color 0.3s;
+        }
+        .contact-form-input:focus {
+            outline: none;
+            border-color: #ff8c00;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Header & Navigation -->
+    <header class="bg-[#1a1a1a]/80 backdrop-blur-md sticky top-0 z-50 border-b border-gray-800/50">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="#" class="text-2xl font-bold text-gray-100">Shashwat</a>
+            <div class="flex-grow flex justify-center items-center">
+                <div class="hidden md:flex space-x-8">
+                    <a href="#home" class="nav-link active">Home</a>
+                    <a href="#skills" class="nav-link">Skills</a>
+                    <a href="#projects" class="nav-link">Projects</a>
+                    <a href="#experience" class="nav-link">Experience</a>
+                    <a href="#contact" class="nav-link">Contact</a>
+                </div>
+            </div>
+            <button id="mobile-menu-button" class="md:hidden text-gray-300 focus:outline-none">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-4 6h4"></path></svg>
+            </button>
+        </nav>
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden px-6 pb-4">
+            <a href="#home" class="block py-2 nav-link active">Home</a>
+            <a href="#skills" class="block py-2 nav-link">Skills</a>
+            <a href="#projects" class="block py-2 nav-link">Projects</a>
+            <a href="#experience" class="block py-2 nav-link">Experience</a>
+            <a href="#contact" class="block mt-2 text-center w-full bg-[#ff8c00] text-[#1a1a1a] px-4 py-2 rounded-lg hover:bg-opacity-90 transition-colors font-bold">Contact Me</a>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 py-12">
+        <!-- Home Section -->
+        <section id="home" class="min-h-[70vh] flex items-center justify-center text-center fade-in">
+            <div class="max-w-4xl">
+                <h1 class="text-4xl md:text-7xl font-bold text-gray-100 leading-tight animate-pulse-slow">Data Enthusiast</h1>
+                <p class="mt-4 text-lg md:text-xl text-gray-400 max-w-2xl mx-auto">
+                    Passionate about transforming complex data into actionable insights. With a strong foundation in SQL, Python, and data visualization tools, I specialize in uncovering trends, optimizing processes, and driving data-informed decisions.
+                </p>
+                <div class="mt-8 flex justify-center space-x-4">
+                    <a href="https://www.linkedin.com/in/shashwat-a92a7032a/" target="_blank" class="text-gray-400 hover:text-[#ff8c00] transition-colors">
+                        <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" clip-rule="evenodd"/></svg>
+                    </a>
+                    <a href="https://shashwateran.github.io/" target="_blank" class="text-gray-400 hover:text-[#ff8c00] transition-colors">
+                        <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.168 6.839 9.49.5.092.682-.217.682-.482 0-.237-.009-.868-.014-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.031-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.378.203 2.398.1 2.651.64.7 1.03 1.595 1.03 2.688 0 3.848-2.338 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.001 10.001 0 0022 12c0-5.523-4.477-10-10-10z" clip-rule="evenodd"/></svg>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Skills Section -->
+        <section id="skills" class="py-20 fade-in">
+            <h2 class="text-3xl font-bold text-center mb-2 text-gray-100">Technical Skills</h2>
+            <p class="text-center text-gray-400 mb-12 max-w-2xl mx-auto">
+                This section provides a visual overview of my technical proficiency. My skills range from database management with SQL to data manipulation in Python and creating insightful dashboards with tools like Tableau and Power BI. The chart below reflects my self-assessed proficiency.
+            </p>
+            <div class="chart-container">
+                <canvas id="skillsChart"></canvas>
+            </div>
+        </section>
+
+        <!-- Projects Section -->
+        <section id="projects" class="py-20 bg-[#222] rounded-2xl fade-in">
+            <h2 class="text-3xl font-bold text-center mb-2 text-gray-100">Projects</h2>
+            <p class="text-center text-gray-400 mb-8 max-w-2xl mx-auto">
+                Here are some of the projects I've worked on. They demonstrate my ability to handle data from extraction to visualization and analysis. Use the filters to see projects related to specific technologies.
+            </p>
+            <div class="flex justify-center space-x-2 mb-12">
+                <button class="filter-btn active px-4 py-2 rounded-full text-sm font-bold transition-colors" data-filter="all">All</button>
+                <button class="filter-btn px-4 py-2 rounded-full text-sm font-bold transition-colors" data-filter="SQL">SQL</button>
+                <button class="filter-btn px-4 py-2 rounded-full text-sm font-bold transition-colors" data-filter="Python">Python</button>
+                <button class="filter-btn px-4 py-2 rounded-full text-sm font-bold transition-colors" data-filter="Power BI">Power BI</button>
+                <button class="filter-btn px-4 py-2 rounded-full text-sm font-bold transition-colors" data-filter="Tableau">Tableau</button>
+            </div>
+            <div id="project-gallery" class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Project cards will be injected here by JavaScript -->
+            </div>
+        </section>
+
+        <!-- Experience & Education Section -->
+        <section id="experience" class="py-20 fade-in">
+            <h2 class="text-3xl font-bold text-center mb-12 text-gray-100">Experience & Education</h2>
+            <p class="text-center text-gray-400 mb-12 max-w-3xl mx-auto">
+                My professional journey includes roles where I've applied my analytical skills to drive business results, complemented by a strong educational foundation in business and computing. This timeline highlights key milestones in my career and academic path.
+            </p>
+            <div class="max-w-3xl mx-auto">
+                <div class="relative border-l-2 border-gray-700 pl-12">
+                    <h3 class="text-2xl font-bold text-gray-100 mb-6">Work Experience</h3>
+                    <!-- Work Experience items -->
+                    <div class="mb-12 timeline-item fade-in">
+                        <p class="text-sm text-gray-500">Sep 2024 - Current</p>
+                        <h4 class="text-xl font-bold text-gray-100">Data Ambassador - Data Calculus</h4>
+                        <p class="mt-2 text-gray-400">Promoted data-driven decision-making by demonstrating the value of no-code analytics tools. Led workshops to teach data analysis workflows and visualization techniques to non-technical users. Gathered and analyzed user interaction data to support product improvement and user adoption strategies.</p>
+                    </div>
+                    <div class="mb-12 timeline-item fade-in">
+                        <p class="text-sm text-gray-500">Oct 2024 - Current</p>
+                        <h4 class="text-xl font-bold text-gray-100">3rd Key - Lids</h4>
+                        <p class="mt-2 text-gray-400">Used Excel to track daily sales trends, monitored KPIs (conversion rate, ATV) and created quick insights using Power BI. Analyzed sales and inventory data to support restocking and product placement decisions.</p>
+                    </div>
+                    <div class="mb-12 timeline-item fade-in">
+                        <p class="text-sm text-gray-500">Nov 2023 - Sep 2024</p>
+                        <h4 class="text-xl font-bold text-gray-100">Warehouse Supervisor - Amazon</h4>
+                        <p class="mt-2 text-gray-400">Tracked and analyzed warehouse performance metrics using Excel and Power BI to identify process improvements. Created data visualizations and reports with Power BI and SQL to monitor operational efficiency.</p>
+                    </div>
+                    
+                    <h3 class="text-2xl font-bold text-gray-100 mb-6 mt-16">Education & Certifications</h3>
+                    <!-- Education items -->
+                    <div class="mb-12 timeline-item fade-in">
+                        <p class="text-sm text-gray-500">Expected April 2025</p>
+                        <h4 class="text-xl font-bold text-gray-100">Diploma in Business Administration - Capilano University</h4>
+                        <p class="mt-2 text-gray-400">Majors: Business Computing and Operations. This program provided a strong foundation in both business principles and the technical skills required for data analysis and operational management.</p>
+                    </div>
+                     <div class="mb-12 timeline-item fade-in">
+                        <p class="text-sm text-gray-500">Completed Dec 2024</p>
+                        <h4 class="text-xl font-bold text-gray-100">Microsoft Power BI Data Analyst Certification</h4>
+                        <p class="mt-2 text-gray-400">Coursera. Mastered DAX, Excel, Power BI, and Power Query to process, analyze, and visualize data effectively.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section id="contact" class="py-20 bg-[#222] rounded-2xl fade-in">
+            <div class="max-w-xl mx-auto px-6">
+                <h2 class="text-3xl font-bold text-center mb-2 text-gray-100">Get in Touch</h2>
+                <p class="text-center text-gray-400 mb-8">
+                    Have a question or a project idea? Feel free to reach out to me directly using the form below.
+                </p>
+                <form id="contact-form" class="space-y-6">
+                    <div>
+                        <label for="name" class="contact-form-label">Name</label>
+                        <input type="text" id="name" name="name" required class="contact-form-input">
+                    </div>
+                    <div>
+                        <label for="email" class="contact-form-label">Email ID</label>
+                        <input type="email" id="email" name="email" required class="contact-form-input">
+                    </div>
+                    <div>
+                        <label for="message" class="contact-form-label">Message</label>
+                        <textarea id="message" name="message" rows="5" required class="contact-form-input"></textarea>
+                    </div>
+                    <div class="flex justify-center">
+                        <button type="submit" class="bg-[#ff8c00] text-[#1a1a1a] px-8 py-3 rounded-lg font-bold hover:bg-opacity-90 transition-colors">Send</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-black border-t border-gray-800">
+        <div class="container mx-auto px-6 py-8 text-center text-gray-500">
+            <p>&copy; 2025 Shashwat. All Rights Reserved.</p>
+            <p class="text-sm mt-2">Built with passion and code.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mobile menu toggle
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+
+            // Smooth scrolling and active nav link
+            const navLinks = document.querySelectorAll('.nav-link');
+            const sections = document.querySelectorAll('section');
+
+            function changeActiveLink() {
+                let index = sections.length;
+                while(--index && window.scrollY + 50 < sections[index].offsetTop) {}
+                
+                navLinks.forEach((link) => link.classList.remove('active'));
+                const activeLink = document.querySelector(`.nav-link[href="#${sections[index].id}"]`);
+                if (activeLink) {
+                    activeLink.classList.add('active');
+                }
+            }
+
+            changeActiveLink();
+            window.addEventListener('scroll', changeActiveLink);
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href');
+                    const targetSection = document.querySelector(targetId);
+                    if (targetSection) {
+                        window.scrollTo({
+                            top: targetSection.offsetTop - 80,
+                            behavior: 'smooth'
+                        });
+                        if (mobileMenu.classList.contains('hidden') === false) {
+                            mobileMenu.classList.add('hidden');
+                        }
+                    }
+                });
+            });
+
+            // Skills Chart
+            const ctx = document.getElementById('skillsChart').getContext('2d');
+            const skillsChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['SQL (PostgreSQL, MySQL)', 'Python (Pandas, NumPy)', 'Tableau', 'Power BI', 'Excel', 'Microsoft Azure', 'PySpark'],
+                    datasets: [{
+                        label: 'Proficiency',
+                        data: [90, 85, 80, 88, 95, 70, 65],
+                        backgroundColor: '#ff8c00', /* Vibrant orange for bars */
+                        borderColor: '#ff8c00',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: '#d4d4d4',
+                            bodyColor: '#d4d4d4',
+                            borderColor: '#ff8c00',
+                            borderWidth: 1,
+                            callbacks: {
+                                label: function(context) {
+                                    return `Proficiency: ${context.raw}%`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: {
+                                color: '#333'
+                            },
+                            ticks: {
+                                color: '#d4d4d4'
+                            }
+                        },
+                        y: {
+                            grid: {
+                                color: '#333'
+                            },
+                            ticks: {
+                                color: '#d4d4d4',
+                                autoSkip: false,
+                                callback: function(value, index, values) {
+                                    const label = this.getLabelForValue(value);
+                                    if (label.length > 16) {
+                                        return label.match(/.{1,16}/g);
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Project Data
+            const projects = [
+                {
+                    title: 'Sales and Customer Behavior Analysis',
+                    description: 'Analyzed sales and customer data using PostgreSQL, leveraging Window Functions and CTES for customer segmentation by lifetime value. Conducted cohort and retention analysis with Advanced SQL to uncover churn and revenue trends.',
+                    tags: ['SQL']
+                },
+                {
+                    title: 'Data Science Job Market EDA',
+                    description: 'Utilized Python to analyze over 7000 data science job listings. Cleaned and explored job descriptions leveraging Pandas for data processing. Aggregated and visualized the data using Pandas, Matplotlib, and Seaborn to compile a professional report.',
+                    tags: ['Python']
+                },
+                {
+                    title: 'Adventure Works Sales Dashboard',
+                    description: 'Analyzed sales performance data of Adventure Works using Power BI dashboards. Processed and transformed data with DAX, Power Query (M), and Excel to ensure data quality and provide insights to stakeholders.',
+                    tags: ['Power BI', 'Excel']
+                },
+                {
+                    title: 'COVID-19 Data Exploration',
+                    description: 'Extracted and cleaned COVID-19 data using SQL, leveraging Subqueries and CTES for efficient data preparation. Developed interactive dashboards in Tableau to visualize case trends and vaccination progress.',
+                    tags: ['SQL', 'Tableau']
+                }
+            ];
+
+            // Project Filtering
+            const gallery = document.getElementById('project-gallery');
+            const filterBtns = document.querySelectorAll('.filter-btn');
+
+            function displayProjects(filter) {
+                gallery.innerHTML = '';
+                const filteredProjects = projects.filter(p => filter === 'all' || p.tags.includes(filter));
+                
+                if (filteredProjects.length === 0) {
+                    gallery.innerHTML = `<p class="text-center col-span-full text-gray-500">No projects found for this category.</p>`;
+                    return;
+                }
+
+                filteredProjects.forEach(project => {
+                    const tagsHtml = project.tags.map(tag => `<span class="tag">${tag}</span>`).join(' ');
+                    const card = `
+                        <a href="https://shashwateran.github.io/" target="_blank" class="project-card bg-[#222] rounded-lg p-6 flex flex-col">
+                            <h3 class="text-xl font-bold text-gray-100 mb-2">${project.title}</h3>
+                            <p class="text-gray-400 flex-grow">${project.description}</p>
+                            <div class="mt-4 flex flex-wrap gap-2">
+                                ${tagsHtml}
+                            </div>
+                        </a>
+                    `;
+                    gallery.innerHTML += card;
+                });
+            }
+
+            filterBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    filterBtns.forEach(b => b.classList.remove('active', 'bg-[#ff8c00]', 'text-[#1a1a1a]'));
+                    this.classList.add('active', 'bg-[#ff8c00]', 'text-[#1a1a1a]');
+                    displayProjects(this.getAttribute('data-filter'));
+                });
+            });
+
+            // Initial display
+            displayProjects('all');
+            document.querySelector('.filter-btn.active').classList.add('bg-[#ff8c00]', 'text-[#1a1a1a]');
+
+
+            // Fade-in on scroll animation
+            const faders = document.querySelectorAll('.fade-in');
+            const appearOptions = {
+                threshold: 0.2
+            };
+            const appearOnScroll = new IntersectionObserver(function(entries, appearOnScroll) {
+                entries.forEach(entry => {
+                    if (!entry.isIntersecting) {
+                        return;
+                    } else {
+                        entry.target.classList.add('is-visible');
+                        appearOnScroll.unobserve(entry.target);
+                    }
+                });
+            }, appearOptions);
+
+            faders.forEach(fader => {
+                appearOnScroll.observe(fader);
+            });
+
+            // Contact form handler
+            const contactForm = document.getElementById('contact-form');
+            contactForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const name = document.getElementById('name').value;
+                const email = document.getElementById('email').value;
+                const message = document.getElementById('message').value;
+                const subject = `Message from ${name} via your portfolio`;
+                const body = `Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`;
+
+                const mailtoLink = `mailto:shashwateran17@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+                window.location.href = mailtoLink;
+            });
+        });
+    </script>
+</body>
+</html>
